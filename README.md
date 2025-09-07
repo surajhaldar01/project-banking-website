@@ -1,2 +1,2 @@
 # project-banking-website
- A banking website as a project
+ A banking website as a project .
