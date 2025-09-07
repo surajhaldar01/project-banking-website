@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Shinhan bank — Secure Login</title>
+  <meta name="color-scheme" content="light only">
+  <style>
+    :root{
+      --brand:#0a58ca;          /* Primary */
+      --brand-600:#0a4db1;
+      --ink:#0b1324;            /* Text */
+      --muted:#6b7280;          /* Muted text */
+      --bg: #f3f6fb;            /* Background */
+      --card:#ffffff;
+      --border:#e5e7eb;
+      --success:#0f9d58;
+      --warn:#dc2626;
+      --radius:14px;
+      --shadow:0 12px 32px rgba(16,24,40,.10);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      color:var(--ink);
+      background:
+        radial-gradient(1200px 600px at 10% 0%, #e8f1ff 0%, rgba(232,241,255,0) 60%),
+        radial-gradient(900px 500px at 100% 100%, #eaf8ff 0%, rgba(234,248,255,0) 60%),
+        linear-gradient(#ffffff, var(--bg));
+      display:grid;
+      place-items:center;
+      padding:24px;
+    }
+
+    .shell{
+      width:100%;
+      max-width: 980px;
+      display:grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap:28px;
+      align-items:stretch;
+    }
+    @media (max-width: 900px){
+      .shell{ grid-template-columns: 1fr; max-width: 420px; }
+      .brand-card{ display:none; }
+    }
+
+    /* Left: Brand / trust */
+    .brand-card{
+      background: linear-gradient(160deg, #0a58ca, #143b8f 55%, #092a6a);
+      color:#fff;
+      border-radius: var(--radius);
+      padding:28px;
+      box-shadow: var(--shadow);
+      position:relative;
+      overflow:hidden;
+      isolation:isolate;
+    }
+    .brand-top{
+      display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px;
+    }
+    .logo{
+      display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.2px;
+    }
+    .logo-mark{
+      width:36px; height:36px; border-radius:10px; background:#fff; display:grid; place-items:center;
+      color:#0a58ca; font-weight:900;
+    }
+    .trust{
+      display:flex; align-items:center; gap:10px; font-size:12px; opacity:.9;
+    }
+    .trust .dot{ width:8px; height:8px; background:#22c55e; border-radius:999px; box-shadow:0 0 0 4px rgba(34,197,94,.2); }
+    .brand-copy{
+      margin-top:16px; line-height:1.5; opacity:.95; font-size:14px;
+    }
+    .secure-badges{
+      display:flex; gap:10px; flex-wrap:wrap; margin-top:18px;
+    }
+    .chip{
+      background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.25);
+      color:#fff; padding:6px 10px; border-radius:999px; font-size:12px;
+      display:inline-flex; align-items:center; gap:8px;
+    }
+
+    /* Right: Login card */
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:26px 24px;
+    }
+    .card h2{
+      margin:0 0 6px 0; font-size:22px;
+    }
+    .sub{ color:var(--muted); font-size:13px; margin-bottom:18px; }
+
+    .form-row{ margin:14px 0; }
+    label{ display:block; font-size:13px; margin-bottom:8px; color:#111827; }
+    .control{
+      position:relative;
+    }
+    input[type="text"], input[type="password"]{
+      width:100%;
+      padding:12px 44px 12px 12px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      font-size:15px;
+      outline:none;
+      transition: box-shadow .15s, border-color .15s;
+    }
+    input:focus{
+      border-color: #c7d2fe;
+      box-shadow: 0 0 0 4px rgba(59,130,246,.15);
+    }
+    .end-action{
+      position:absolute; right:8px; top:50%; transform:translateY(-50%);
+      display:flex; gap:6px; align-items:center;
+    }
+    .icon-btn{
+      border:none; background:transparent; cursor:pointer; padding:6px; border-radius:8px;
+    }
+    .icon-btn:hover{ background:#f3f4f6; }
+    .hint{ font-size:12px; color:var(--muted); margin-top:6px; }
+
+    .row-flex{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin:10px 0 2px; }
+    .remember{
+      display:flex; align-items:center; gap:10px; user-select:none; cursor:pointer;
+    }
+    .remember input{ width:16px; height:16px; accent-color: var(--brand); }
+
+    .btn{
+      width:100%;
+      padding:12px 14px;
+      background:var(--brand);
+      color:#fff;
+      border:none;
+      border-radius:10px;
+      font-weight:700;
+      font-size:16px;
+      cursor:pointer;
+      transition: background .2s, transform .02s;
+    }
+    .btn:hover{ background:var(--brand-600); }
+    .btn:active{ transform: translateY(1px); }
+    .btn[disabled]{ opacity:.7; cursor:not-allowed; }
+
+    .legal{
+      margin-top:14px; font-size:12px; color:var(--muted); text-align:center;
+    }
+    .links{
+      margin-top:12px; display:flex; justify-content:space-between; font-size:13px;
+    }
+    .links a{ color:var(--brand); text-decoration:none; }
+    .links a:hover{ text-decoration:underline; }
+
+    .banner{
+      background:#f9fafb; border:1px dashed var(--border);
+      border-radius:10px; padding:10px 12px; font-size:12px; color:#374151; margin-top:14px;
+      display:flex; align-items:center; gap:10px;
+    }
+    .caps{ color:var(--warn); font-weight:600; display:none; }
+
+    .footnote{
+      margin-top:12px; text-align:center; font-size:11px; color:#94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell" role="main">
+    <!-- Brand / Trust column -->
+    <aside class="brand-card" aria-hidden="true">
+      <div class="brand-top">
+        <div class="logo" aria-label="Shinhan Bank">
+          <div class="logo-mark" aria-hidden="true">SB</div>
+          <div>Shinhan Bank</div>
+        </div>
+        <div class="trust">
+          <span class="dot" aria-hidden="true"></span>
+          <span>Secure connection</span>
+        </div>
+      </div>
+
+      <div class="brand-copy">
+        Welcome to Shinhan Bank Online. Your credentials are encrypted and protected. For your safety, verify the URL and the lock icon in your browser’s address bar.
+      </div>
+
+      <div class="secure-badges">
+        <span class="chip">🔒 TLS 1.3</span>
+        <span class="chip">🛡️ Device binding</span>
+        <span class="chip">🧭 RBI guidelines</span>
+      </div>
+    </aside>
+
+    <!-- Login card -->
+    <section class="card" aria-label="Login">
+      <h2>Secure Login</h2>
+      <div class="sub">Enter your Customer ID / Username and Password to continue.</div>
+
+      <form id="loginForm" autocomplete="on" novalidate>
+        <!-- Username -->
+        <div class="form-row">
+          <label for="username">Customer ID / Username</label>
+          <div class="control">
+            <input
+              id="username"
+              name="username"
+              type="text"
+              inputmode="text"
+              autocomplete="username"
+              required
+              aria-required="true"
+              placeholder="e.g., SHN123456"
+            />
+            <div class="end-action" aria-hidden="true">
+              <!-- decorative icon -->
+              <span title="User" style="font-size:16px">👤</span>
+            </div>
+          </div>
+          <div class="hint" id="lastLoginHint" style="display:none;"></div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-row">
+          <label for="password">Login Password</label>
+          <div class="control">
+            <input
+              id="password"
+              name="current-password"
+              type="password"
+              autocomplete="current-password"
+              required
+              aria-required="true"
+              placeholder="Your password"
+            />
+            <div class="end-action">
+              <button type="button" class="icon-btn" id="togglePwd" aria-label="Show password">👁️</button>
+            </div>
+          </div>
+          <div class="hint"><span id="capsWarn" class="caps">Caps Lock is ON</span></div>
+        </div>
+
+        <div class="row-flex">
+          <label class="remember" for="remember">
+            <input id="remember" type="checkbox" checked />
+            <span>Remember me on this device</span>
+          </label>
+          <a href="#" class="small-link" onclick="alert('Support will help you recover your credentials.'); return false;">Need help?</a>
+        </div>
+
+        <div class="banner" role="note" aria-live="polite">
+          🔔 Never share your username, password, OTP or CVV with anyone. Shinhan Bank will never ask for your credentials.
+        </div>
+
+        <div style="margin-top:14px">
+          <button class="btn" id="loginBtn" type="submit">Login</button>
+        </div>
+
+        <div class="links">
+          <a href="#" onclick="alert('Redirect to Forgot User ID'); return false;">Forgot Customer ID?</a>
+          <a href="#" onclick="alert('Redirect to Reset Password'); return false;">Forgot Password?</a>
+        </div>
+
+        <div class="footnote">© <span id="yy"></span> Shinhan Bank. All rights reserved.</div>
+      </form>
+
+      <p class="legal">By logging in, you agree to our Terms of Use and Privacy Policy.</p>
+    </section>
+  </div>
+
+  <script>
+    // ---- Config ----
+    const LS_KEYS = {
+      rememberedUser: 'shinhan:rememberedUser',
+      lastLoginAt: 'shinhan:lastLoginAt',
+    };
+
+    // ---- DOM ----
+    const form = document.getElementById('loginForm');
+    const username = document.getElementById('username');
+    const password = document.getElementById('password');
+    const remember = document.getElementById('remember');
+    const loginBtn = document.getElementById('loginBtn');
+    const togglePwd = document.getElementById('togglePwd');
+    const capsWarn = document.getElementById('capsWarn');
+    const lastLoginHint = document.getElementById('lastLoginHint');
+
+    // Year in footer
+    document.getElementById('yy').textContent = new Date().getFullYear();
+
+    // Prefill from localStorage if present
+    (function initRemembered(){
+      try{
+        const savedUser = localStorage.getItem(LS_KEYS.rememberedUser);
+        const lastAt = localStorage.getItem(LS_KEYS.lastLoginAt);
+        if(savedUser){
+          username.value = savedUser;
+          remember.checked = true;
+          if(lastAt){
+            const when = new Date(parseInt(lastAt,10));
+            lastLoginHint.style.display = 'block';
+            lastLoginHint.textContent = `Last signed in on ${when.toLocaleString('en-IN', { hour12: true })}`;
+          }
+        }else{
+          // Default to checked as requested
+          remember.checked = true;
+        }
+      }catch(e){
+        // no-op (private mode or blocked storage)
+      }
+      // Cursor focus
+      if(!username.value) username.focus(); else password.focus();
+    })();
+
+    // Caps Lock detection
+    function handleCaps(e){
+      const isCaps = e.getModifierState && e.getModifierState('CapsLock');
+      capsWarn.style.display = isCaps ? 'inline' : 'none';
+    }
+    password.addEventListener('keyup', handleCaps);
+    password.addEventListener('keydown', handleCaps);
+
+    // Show/Hide password
+    togglePwd.addEventListener('click', ()=>{
+      const isPw = password.type === 'password';
+      password.type = isPw ? 'text' : 'password';
+      togglePwd.textContent = isPw ? '🙈' : '👁️';
+      togglePwd.setAttribute('aria-label', isPw ? 'Hide password' : 'Show password');
+      password.focus();
+    });
+
+    // Basic client-side validation helper
+    function invalid(msg, el){
+      alert(msg);
+      el?.focus();
+      return false;
+    }
+
+    // Submit
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+
+      const user = username.value.trim();
+      const pass = password.value;
+
+      if(!user) return invalid('Please enter your Customer ID / Username.', username);
+      if(!pass) return invalid('Please enter your password.', password);
+
+      // Remember me behavior
+      try{
+        if(remember.checked){
+          localStorage.setItem(LS_KEYS.rememberedUser, user);
+        }else{
+          localStorage.removeItem(LS_KEYS.rememberedUser);
+        }
+      }catch(e){ /* ignore */ }
+
+      // Simulate secure auth request (replace with real API)
+      loginBtn.disabled = true;
+      const originalText = loginBtn.textContent;
+      loginBtn.textContent = 'Verifying…';
+
+      // Fake latency
+      await new Promise(r=>setTimeout(r, 700));
+
+      // In a real app, verify credentials via HTTPS and handle errors.
+      // For demo, treat any non-empty combination as success.
+      try{
+        localStorage.setItem(LS_KEYS.lastLoginAt, String(Date.now()));
+      }catch(e){ /* ignore */ }
+
+      // Redirect to dashboard
+      window.location.href = 'front.html';
+      // In case navigation is blocked by popup settings, re-enable button:
+      setTimeout(()=>{ loginBtn.disabled=false; loginBtn.textContent=originalText; }, 1200);
+    });
+
+    // Prevent accidental whitespace
+    username.addEventListener('blur', ()=> username.value = username.value.trim());
+  </script>
+</body>
+</html>

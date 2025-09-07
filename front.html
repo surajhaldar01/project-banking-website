@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IDBI bank</title>
+  <style>
+    :root{
+      --bg:#eef3ff;
+      --card:#fff;
+      --border:#e6e7eb;
+      --text:#0b1324;
+      --muted:#6b7280;
+      --primary:#0ea5e9;
+      --primary2:#3b82f6;
+      --good:#16a34a;
+      --bad:#e11d48;
+      --radius:16px;
+      --shadow:0 8px 28px rgba(16,24,40,.06);
+      --grad-page:linear-gradient(180deg,#eef3ff 0%,#f7fbff 40%,#f6f7fb 100%);
+      --grad-balance:linear-gradient(135deg,#22c55e 0%,#16a34a 100%);
+      --grad-header:linear-gradient(90deg,#3b82f6 0%,#06b6d4 100%);
+      --blue:#2563eb;
+      --amber:#f59e0b;
+      --pink:#ec4899;
+      --violet:#8b5cf6;
+      --teal:#14b8a6;
+      --balance-color:#88183e;
+; /* New Green Color */
+    }
+    *{box-sizing:border-box}
+    body{background:var(--grad-page);font-family:Arial,system-ui,-apple-system,Segoe UI,Roboto;color:var(--text);margin:0;padding:40px;padding-bottom:88px}
+
+    /* Header (keep same content) */
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+    .header h1{font-size:24px;margin:0}
+    .status{background:#f44336;color:#fff;padding:5px 10px;border-radius:20px;font-size:12px}
+
+    /* Balance */
+    .balance-box{
+      background:var(--balance-color); /* Updated with the new green color */
+      color:#fff;
+      border-radius:12px;
+      padding:24px 30px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:24px;
+      box-shadow:var(--shadow)
+    }
+    .balance-box .left{font-size:20px}
+    .balance-box .left p{margin:6px 0}
+    .balance-box .right{text-align:right;font-size:16px}
+
+    /* Account details strip (added) */
+    .details{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:14px}
+    .kv{padding:0 12px;display:flex;gap:6px;align-items:baseline}
+    .kv .k{font-size:16px;opacity:.9}  /* Increased font size for labels */
+    .kv .v{font-weight:700; font-size:18px;} /* Increased font size for values */
+    .kv + .kv{border-left:1px solid rgba(255,255,255,.4)}
+    .mono{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:18px;} /* Increased font size */
+
+    /* Sections (keep your tiles & text) */
+    .section{background:var(--card);padding:30px;border-radius:16px;box-shadow:var(--shadow);border:1px solid var(--border);max-width:1200px;margin:0 auto 24px}
+    .section h2{margin:0 0 24px 0;font-size:24px;color:transparent;text-align:center;background:var(--grad-header);-webkit-background-clip:text;background-clip:text}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:25px}
+    .item{background:linear-gradient(#fff,#fff) padding-box,linear-gradient(135deg,#e2ecff,#f9e8ff) border-box;border-radius:12px;padding:20px 10px;display:flex;flex-direction:column;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.06);transition:transform .2s, box-shadow .2s;border:1px solid transparent}
+    .item:hover{transform:translateY(-5px);box-shadow:0 6px 16px rgba(0,0,0,.1);cursor:pointer}
+    .icon-circle{background:#e7f1ff;border-radius:50%;width:60px;height:60px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+    .icon-circle img{width:32px;height:32px}
+    .item p{font-size:13px;text-align:center;margin:0;color:#333}
+
+    /* Real-time history (added) */
+    .tx-list{display:grid;gap:10px}
+    .tx{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);border-radius:12px;padding:12px 14px;background:#fff}
+    .tx .l{display:flex;align-items:center;gap:10px}
+    .badge{font-size:11px;border:1px solid var(--border);padding:2px 8px;border-radius:999px;color:#475569}
+    .cr{color:#059669;font-weight:700}
+    .db{color:#e11d48;font-weight:700}
+    .small{font-size:12px;color:#475569}
+
+    /* Bottom quick actions (unchanged) */
+    .quick-actions{display:flex;justify-content:space-around;align-items:center;position:fixed;bottom:0;left:0;width:100%;background:#fff;padding:10px 0;box-shadow:0 -2px 6px rgba(0,0,0,0.1);z-index:999}
+    .quick-actions div{text-align:center;flex:1}
+    .quick-actions div img{display:block;margin:auto}
+    .quick-actions div p{margin:5px 0 0 0;font-size:12px;color:#333}
+
+    @media (max-width:720px){body{padding:16px;padding-bottom:88px}.balance-box{flex-direction:column;align-items:flex-start;gap:12px}}
+  /* colorful accents */
+    .header{position:relative}
+    .header:after{content:"";display:block;height:3px;margin-top:10px;background:var(--grad-header);border-radius:999px}
+    .icon-circle{box-shadow:inset 0 0 0 2px rgba(0,0,0,0.04)}
+    .item:hover{transform:translateY(-5px);box-shadow:0 8px 22px rgba(0,0,0,.12)}
+    .item:nth-child(4n+1) .icon-circle{background:#e7f1ff}
+    .item:nth-child(4n+2) .icon-circle{background:#ecfdf5}
+    .item:nth-child(4n+3) .icon-circle{background:#fff1f2}
+    .item:nth-child(4n+4) .icon-circle{background:#f5f3ff}
+    .quick-actions{background:linear-gradient(90deg,#ffffff,#f7fbff)}
+    .tx{background:linear-gradient(0deg,#ffffff,#f8fbff);border:1px solid var(--border)}
+    .tx.is-cr{border-left:4px solid #10b981}
+    .tx.is-db{border-left:4px solid #ef4444}
+  </style>
+</head>
+<body>
+  <!-- HEADER (exact same wording) -->
+  <div class="header">
+    <h1>IDBI Bank - Welcome, Mr. Mohammad Sufiyan</h1>
+    <span class="status">Account Status: Frozen</span>
+  </div>
+
+  <!-- BALANCE (kept) + account details (added) -->
+  <div class="balance-box">
+    <div class="left">
+      <p>Available Balance</p>
+      <h2>₹<span id="availBal">0.0</span></h2>
+      <p id="bankNameLbl">Shinhan Bank</p>
+      <div class="details">
+        <div class="kv"><div class="k">Account No.</div><div class="v mono" id="acctNo">3577 6758 7599 5880</div></div>
+        <div class="kv"><div class="k">IFSC.</div><div class="v mono" id="ifsc">SHBK0000000</div></div>
+        <div class="kv"><div class="k">UPI ID.</div><div class="v mono" id="upiId">vineet789@bbSS</div></div>
+      </div>
+      <div class="small" style="margin-top:6px">Last updated <span id="clock">—</span></div>
+    </div>
+    <div class="right">
+      <p>Account No.</p>
+      <p class="mono" id="acctNoBig">3577 6758 7599 5880</p>
+    </div>
+  </div>
+
+  <!-- PAYMENTS & TRANSFERS (kept exactly) -->
+  <div class="section">
+    <h2>Payments & Transfers</h2>
+    <div class="grid">
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/money-transfer.png"/></div><p>Transfer Money</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/bill.png"/></div><p>Bill Pay & Recharge</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/upi.png"/></div><p>BHIM UPI</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/qr-code.png"/></div><p><a href ="manage.html" style="text-decoration:none;color:inherit">Scan Any QR</a></p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/one-finger.png"/></div><p><p><a href ="manage.html" style="text-decoration:none;color:inherit">Transfer</a></p></p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/send-mass-email.png"/></div><p>Pay your Contact</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/add-user-group-man-man.png"/></div><p>Add/Manage Beneficiary</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/bank-cards.png"/></div><p>Send to My Acco...</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/group-foreground-selected.png"/></div><p>Send to My Beneficiaries</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/money-bag.png"/></div><p>Send Money Abroad</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/mobile-payment.png"/></div><p>Mobile Recharge</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/satellite-dish.png"/></div><p>DTH Recharge</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/bill.png"/></div><p><a href ="monitor.html" style="text-decoration:none;color:inherit">Pay Due Bills</a></p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/atm.png"/></div><p>Anytime Bill Payment</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/add-property.png"/></div><p>Add/Manage Biller</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/rupee.png"/></div><p>Manage AutoPay</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/toll.png"/></div><p>FASTag</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/money-transfer.png"/></div><p>Fund Transfer Li...</p></div>
+      
+    </div>
+  </div>
+
+  <!-- INVEST & APPLY NOW (kept exactly) -->
+  <div class="section">
+    <h2>Invest & Apply Now</h2>
+    <div class="grid">
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/investment.png"/></div><p>Purchase/SI/SIP</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/plant-under-sun.png"/></div><p>Start SIP</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/portfolio.png"/></div><p>Investment Summary</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/trading.png"/></div><p>Open Demat Account</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/piggy-bank.png"/></div><p>Fixed/Recurring</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/retirement.png"/></div><p>National Pension Sys</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/fund-accounting.png"/></div><p>IPO (ASBA)</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/money-bag.png"/></div><p>Kotak Insta SIP</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/walking-stick.png"/></div><p>Atal Pension Yojana</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/gold-bars.png"/></div><p>Sovereign Gold Bond</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/budget.png"/></div><p>Redeem Mutual Fund</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/data-sheet.png"/></div><p>Research</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/toll.png"/></div><p>FASTag</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/bank-account.png"/></div><p>Investment Account</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/credit-card.png"/></div><p>Apply for Credit Card</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/loan.png"/></div><p>Personal Loan</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/money-bag.png"/></div><p>Mid-Month Advance</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/home.png"/></div><p>Home Loan</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/motorcycle.png"/></div><p>Two Wheeler Loan</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/car.png"/></div><p>Car Loan</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/bank-card-front.png"/></div><p>Image Debit Card</p></div>
+      <div class="item"><div class="icon-circle"><img src="https://img.icons8.com/ios/50/007bff/medical-insurance.png"/></div><p>Instant Health Insur</p></div>
+    </div>
+  </div>
+
+  <!-- REAL-TIME TRANSFER HISTORY (added at the end) -->
+  <div class="section" id="history">
+    <h2>Real-time Transfer History</h2>
+    <div class="tx-list" id="txList"></div>
+    <div style="margin-top:12px" class="small">Full statement: <a href="history.html" style="color:var(--primary);text-decoration:none;font-weight:700">Open history page →</a></div>
+  </div>
+
+  <!-- Bottom bar (unchanged) -->
+  <div class="quick-actions">
+    <div>
+      <img src="https://img.icons8.com/ios-glyphs/30/000000/home.png"/>
+      <p>Home</p>
+    </div>
+    <div>
+      <img src="https://img.icons8.com/ios-glyphs/30/000000/forward-arrow.png"/>
+      <p><a href ="tf.html" style="text-decoration:none;color:inherit">Transfer</a></p>
+    </div>
+    <div>
+      <img src="https://img.icons8.com/ios-glyphs/30/000000/inbox.png"/>
+      <p><a href ="frize.html" style="text-decoration:none;color:inherit">Pay</a></p>
+    </div>
+    <div>
+      <img src="https://img.icons8.com/ios-glyphs/30/000000/document.png"/>
+      <p><a href ="history.html" style="text-decoration:none;color:inherit">Statement</a></p>
+    </div>
+    <div>
+      <img src="https://img.icons8.com/ios-glyphs/30/000000/user.png"/>
+      <p><a href ="tf.html" style="text-decoration:none;color:inherit">Profile</a></p>
+    </div>
+  </div>
+
+  <script>
+    // Same storage used by your Manage/History pages
+    const STORAGE_KEY = 'bankData:v1';
+
+    function loadData(){
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw){
+        // lightweight defaults – won't overwrite if you already have data
+        return { bankName:'Shinhan Bank', account:{ name:'Mr. vineet Gupta', numberMasked:'3577 6758 7599 5880', upi:'vineet@bank', ifsc:'SHBK0000000', branch:'Main Branch', openingBalance:0 }, transactions:[] };
+      }
+      try{ return JSON.parse(raw);}catch{ return { bankName:'Shinhan Bank', account:{ name:'Mr. vineet Gupta', numberMasked:'3577 6758 7599 5880', upi:'vineet@bank', ifsc:'SHBK0000000', branch:'Main Branch', openingBalance:0 }, transactions:[] }; }
+    }
+    function formatINR(n){ return new Intl.NumberFormat('en-IN',{maximumFractionDigits:2}).format(Number(n||0)); }
+    function computeBalances(opening, txs){
+      const items = (txs||[]).slice().sort((a,b)=> new Date(a.ts)-new Date(b.ts));
+      let bal = Number(opening||0); const withBal = [];
+      for(const tx of items){ if(tx.type==='credit') bal+=Number(tx.amount||0); else if(tx.type==='debit') bal-=Number(tx.amount||0); withBal.push({...tx, balance:bal}); }
+      return withBal;
+    }
+    function maskCard(s){ s=String(s||''); if(s.replace(/\s/g,'').length<8) return 'XXXX XXXX XXXX 0000'; return s.replace(/(\d{4})\s*(\d{4})\s*(\d{4})\s*(\d{0,4}).*/, (m,a,b,c,d)=>`${a} ${b} ${c} ${d||'0000'}`); }
+
+    function render(){
+      const d = loadData();
+      const acct = d.account||{}; 
+      document.getElementById('bankNameLbl').textContent = d.bankName || 'Shinhan Bank';
+      document.getElementById('acctNo').textContent = maskCard(acct.numberMasked||'3577 6758 7599 5880');
+      document.getElementById('acctNoBig').textContent = maskCard(acct.numberMasked||'3577 6758 7599 5880');
+      document.getElementById('upiId').textContent = acct.upi||'—';
+      document.getElementById('ifsc').textContent = acct.ifsc||'—';
+
+      // Balance from transactions
+      const withBal = computeBalances(acct.openingBalance, d.transactions);
+      const latestBal = withBal.length ? withBal[withBal.length-1].balance : Number(acct.openingBalance||0);
+      document.getElementById('availBal').textContent = formatINR(latestBal);
+
+      // Real-time history (latest 10, newest first)
+      const list = withBal.slice().reverse().slice(0,10);
+      const box = document.getElementById('txList');
+      box.innerHTML='';
+      if(list.length===0){ box.innerHTML='<div class="small">No transactions yet.</div>'; return; }
+      list.forEach(tx=>{
+        if(tx.type!=='credit' && tx.type!=='debit') return; // ignore any non-money rows
+        const isCr = tx.type==='credit';
+        const row = document.createElement('div'); row.className='tx ' + (isCr ? 'is-cr' : 'is-db');
+        row.innerHTML = `
+          <div class="l">
+            <div class="icon-circle" style="width:36px;height:36px;border-radius:999px;background:${isCr?'#ecfdf5':'#fff1f2'};border:1px solid ${isCr?'#c7f3e6':'#ffd2d7'}">${isCr?'⬇️':'⬆️'}</div>
+            <div>
+              <div style="font-weight:700">${tx.title||'—'} <span class="badge">${tx.channel||''}</span></div>
+              <div class="small">${new Date(tx.ts).toLocaleString('en-IN',{hour12:true})} • <span class="mono">${tx.ref||''}</span></div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div class="${isCr?'cr':'db'}">${isCr?'+':'-'} ₹${formatINR(tx.amount)}</div>
+            <div class="small">Bal: ₹${formatINR(tx.balance)}</div>
+          </div>`;
+        box.appendChild(row);
+      });
+    }
+
+    // Live clock + live cross-tab updates
+    function tick(){ document.getElementById('clock').textContent = new Date().toLocaleString('en-IN',{hour12:true}); }
+    setInterval(tick,1000); tick();
+    window.addEventListener('storage', (e)=>{ if(e.key===STORAGE_KEY) render(); });
+
+    render();
+  </script>
+</body>
+</html>

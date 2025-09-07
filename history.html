@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bank Account – Transaction History</title>
+  <style>
+    :root{--bg:#f6f7fb;--card:#fff;--border:#e6e7eb;--text:#0b1324;--muted:#6b7280;--green:#059669;--green-bg:#ecfdf5;--red:#e11d48;--red-bg:#fff1f2;--blue:#2563eb;--shadow:0 8px 28px rgba(16,24,40,.06);--radius:14px}
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;color:var(--text);background:linear-gradient(#fafafa, var(--bg))}
+    header.sticky{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--border);backdrop-filter:saturate(180%) blur(8px);z-index:10}
+    .header-inner{max-width:960px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:10px}
+    .logo{height:28px;width:28px;border-radius:6px;background:#111827;display:grid;place-items:center;color:#fff;font-weight:700}
+    h1{font-size:18px;margin:0}
+    .period{font-size:14px;color:var(--muted)}
+
+    .container{max-width:960px;margin:20px auto;padding:0 20px}
+
+    .summary{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .summary .item{font-size:14px;color:var(--muted)}
+    .summary .value{display:block;color:var(--text);font-weight:600;margin-top:2px}
+    .acct{font-family:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace}
+
+    .toolbar{display:flex;gap:8px;justify-content:space-between;align-items:center;margin:10px 0 16px}
+    .search{flex:1}
+    .input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px}
+    .btn{border:none;background:#111827;color:#fff;border-radius:999px;padding:10px 14px;font-weight:600;cursor:pointer}
+    .btn-outline{background:#fff;color:#111827;border:1px solid var(--border)}
+
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+    table{width:100%;border-collapse:separate;border-spacing:0}
+    thead th{background:#fafafa;text-align:left;font-size:12px;color:var(--muted);padding:12px;border-bottom:1px solid var(--border)}
+    tbody td{padding:14px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+    tbody tr:last-child td{border-bottom:none}
+
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;font-size:12px;border:1px solid}
+    .badge.upi{background:#f0f7ff;border-color:#d6e6ff;color:#1e40af}
+    .badge.atm{background:#fff7ed;border-color:#ffe1c6;color:#9a3412}
+    .badge.neft{background:#eefdf3;border-color:#c9f6db;color:#065f46}
+    .badge.imps{background:#f5f3ff;border-color:#e4d9ff;color:#5b21b6}
+
+    .arrow{display:inline-grid;place-items:center;height:26px;width:26px;border-radius:999px;border:1px solid;margin-right:8px}
+    .arrow.credit{background:var(--green-bg);border-color:#c7f3e6;color:var(--green)}
+    .arrow.debit{background:var(--red-bg);border-color:#ffd2d7;color:var(--red)}
+
+    .money{font-weight:700;white-space:nowrap}
+    .money.credit{color:var(--green)}
+    .money.debit{color:var(--red)}
+
+    .small{color:var(--muted);font-size:12px}
+
+    /* your existing print rules */
+    @media print{
+      @page{ size:A4; margin:16mm 12mm; }
+      body{ background:white; }
+      header.sticky{ position:static; border-bottom:none; }
+      .toolbar, .btn, .btn-outline, .search, #printNote{ display:none !important; }
+      .container{ max-width:100%; padding:0; }
+      .summary{ box-shadow:none; }
+      thead{ display:table-header-group; }
+      tfoot{ display:table-footer-group; }
+      table{ page-break-inside:auto; }
+      tr{ page-break-inside:avoid; }
+      .print-header{ display:flex !important; }
+      .print-footer{ display:block !important; position:fixed; bottom:0; left:0; right:0; font-size:11px; color:#6b7280; }
+
+      /* HIDE the green-circled area on print only */
+      header.sticky,
+      .summary {
+        display: none !important;
+      }
+    }
+    .print-header{ display:none; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .print-footer{ display:none; text-align:center; padding-top:6px; border-top:1px solid var(--border); }
+
+    /* -------- print-only bank sheet -------- */
+    #bankSheet{display:none;}
+    @media print{
+      .card, .print-header, .print-footer{ display:none !important; }
+      #bankSheet{ display:block; }
+      .sheet{ border:3px solid #111; padding:10px }
+      .banner{ background:#16a34a; color:#fff; padding:10px 14px; font-weight:800; font-size:20px; display:flex; align-items:center; gap:12px }
+      .banner .logo{ width:42px; height:42px; border-radius:6px; background:#0a0a0a; color:#fff; display:grid; place-items:center; font-weight:800 }
+      .outer{ border:3px solid #111; border-top:none; padding:12px }
+      .meta{ border:2px solid #111; padding:10px; margin:10px 0; display:grid; grid-template-columns:1fr 1fr; gap:8px 20px; font-size:12px }
+      .meta div{ display:grid; grid-template-columns:180px 1fr; gap:8px }
+      .label{ color:#374151 }
+      .value{ font-weight:600 }
+      .titlebar{ border:2px solid #111; padding:6px 10px; margin:12px 0; text-align:center; font-weight:700 }
+      .grid{ width:100%; border-collapse:collapse; font-size:12px }
+      .grid th, .grid td{ border:1px solid #111; padding:6px 6px; vertical-align:top }
+      .grid th{ background:#f5f5f5 }
+      .grid td:nth-last-child(-n+3){ text-align:right }
+      .desc{ white-space:pre-line }
+      .footer{ text-align:right; font-size:11px; color:#6b7280; margin-top:8px }
+      .pnum::after{ content:counter(page) }
+      .ptotal::after{ content:counter(pages) }
+    }
+  </style>
+</head>
+<body>
+  <header class="sticky">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="logo">SB</div>
+        <div>
+          <h1 id="bankName">IDBI bank</h1>
+          <div class="period" id="stmtPeriod">Statement period: —</div>
+        </div>
+      </div>
+      <div>
+        <button class="btn btn-outline" onclick="window.location.href='manage.html'">History</button>
+        <button class="btn btn-outline" id="btnDownload">Download Statement</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="print-header">
+      <div style="display:flex; align-items:center; gap:10px">
+        <div class="logo">SB</div>
+        <div>
+          <div id="phBank" style="font-weight:700">IDBI bank</div>
+          <div id="phAddr" class="small">Corporate Office • Statement generated electronically</div>
+        </div>
+      </div>
+      <div class="small" id="phDate">Generated: —</div>
+    </div>
+
+    <section class="summary">
+      <div class="item">Account Name<span class="value" id="acctName">—</span></div>
+      <div class="item">Account No.<span class="value acct" id="acctNo">—</span></div>
+      <div class="item">IFSC<span class="value acct" id="ifsc">—</span></div>
+      <div class="item"><span class="value" id="branch">—</span></div>
+    </section>
+
+    <div id="printNote" class="small" style="margin:-8px 0 12px;color:#6b7280">Tip: Use the Download Statement button to get a PDF.</div>
+
+    <div class="toolbar">
+      <div class="search"><input id="search" class="input" placeholder="Search by name, UTR, amount…" /></div>
+      <button class="btn btn-outline" id="btnThisMonth">This Month</button>
+      <button class="btn" id="btnExportCSV">Today</button>
+    </div>
+
+    <section class="card">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:170px">Date & Time</th>
+            <th>Details</th>
+            <th style="width:170px">UTR / Ref</th>
+            <th style="width:110px">Debit (₹)</th>
+            <th style="width:110px">Credit (₹)</th>
+            <th style="width:120px">Balance (₹)</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="6" class="small">This is a system-generated statement. For assistance, contact support.</td>
+          </tr>
+        </tfoot>
+      </table>
+    </section>
+
+    <div class="print-footer" id="pfText">—</div>
+
+    <!-- print-only bank-style sheet -->
+    <section id="bankSheet">
+      <div class="sheet">
+        <div class="banner">
+          <div class="logo"></div>
+          <div>DIBI bank Ltd</div>
+        </div>
+        <div class="outer">
+          <div class="meta">
+            <div><span class="label">Account Name</span><span class="value" id="p_name">—</span></div>
+            <div><span class="label">Address</span><span class="value" id="p_addr">Gurugram Sector 83, India-400001</span></div>
+            <div><span class="label">Date</span><span class="value" id="p_date">—</span></div>
+            <div><span class="label">Account Number</span><span class="value" id="p_acno">—</span></div>
+            <div><span class="label">Drawing Power</span><span class="value">0.00</span></div>
+            <div><span class="label">Interest Rate(% p.a.)</span><span class="value">3.50</span></div>
+            <div><span class="label">MOD Balance</span><span class="value">0.00</span></div>
+            <div><span class="label">CIF No.</span><span class="value" id="p_cif">8033275931</span></div>
+            <div><span class="label">CKYCR Number</span><span class="value" id="p_ckyc">21167156X03185</span></div>
+            <div><span class="label">MICR Code</span><span class="value" id="p_micr">719058885</span></div>
+            <div><span class="label">(Magnetic Ink Character Recognition)</span><span class="value">—</span></div>
+            <div><span class="label">Nomination Registered</span><span class="value">No</span></div>
+            <div><span class="label">Account Status</span><span class="value">Frozen</span></div>
+          </div>
+
+          <div class="titlebar">Account Statement from <span id="p_period">—</span></div>
+
+          <table class="grid" id="p_table">
+            <thead>
+              <tr>
+                <th>Txn Date</th>
+                <th>Value Date</th>
+                <th>Description</th>
+                <th>Ref No./Cheque No.</th>
+                <th>Debit</th>
+                <th>Credit</th>
+                <th>Balance</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+
+          <div class="footer">Page <span class="pnum"></span> of <span class="ptotal"></span></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<script>
+const STORAGE_KEY = 'bankData:v1';
+
+const demo = {
+  bankName: 'IDBI Bank',
+  statementPeriod: '19 Aug 2025',
+  account: { name: 'SORIHUDIN', numberMasked: 'XXXXXX 1234', ifsc: 'HDFC0000123', branch: 'Gurgaon – Sector 83', openingBalance: 0 },
+  transactions: [
+    { id: 't2', ts: '2025-08-01T18:00:00+05:30', type: 'debit', channel: 'ATM', title: 'ATM withdrawal', who: 'HDFC Bank – Gurgaon Sector 83', ref: 'ATM083-20250801-600', amount: 10000 },
+    { id: 't3', ts: '2025-08-01T18:13:00+05:30', type: 'credit', channel: 'UPI', title: 'UPI credit', who: 'Mohammed Shahrukh Khan (VPA masked)', ref: 'UTR: 22150801181345', amount: 23500 },
+    { id: 't4', ts: '2025-08-01T18:19:00+05:30', type: 'credit', channel: 'UPI', title: 'UPI credit', who: 'Md Irsad (VPA masked)', ref: 'UTR: 22150801181902', amount: 4350 },
+  ]
+};
+
+function loadData(){ return JSON.parse(localStorage.getItem(STORAGE_KEY) || JSON.stringify(demo)); }
+function saveData(data){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+function formatINR(n){ return new Intl.NumberFormat('en-IN',{maximumFractionDigits:0}).format(n); }
+function money2(n){ return Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function badgeClass(channel){ const c=(channel||'').toUpperCase(); if(c==='UPI') return 'badge upi'; if(c==='ATM') return 'badge atm'; if(c==='NEFT') return 'badge neft'; if(c==='IMPS') return 'badge imps'; return 'badge'; }
+function arrow(type){ const isCredit=type==='credit'; return `<span class="arrow ${isCredit?'credit':'debit'}" aria-hidden><svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="${isCredit?'M12 19V5m0 0l5 5m-5-5l-5 5':'M12 5v14m0 0l-5-5m5 5l5-5'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`; }
+function computeBalances(txs){ let bal=0; return txs.map(tx=>{ if(tx.type==='credit') bal+=tx.amount; else if(tx.type==='debit') bal-=tx.amount; return {...tx,balance:bal}; }); }
+
+function render(){
+  const data = loadData();
+
+  document.getElementById('bankName').textContent = data.bankName;
+  document.getElementById('stmtPeriod').textContent = 'Statement period: ' + data.statementPeriod;
+  document.getElementById('acctName').textContent = data.account.name;
+  document.getElementById('acctNo').textContent = data.account.numberMasked;
+  document.getElementById('ifsc').textContent = data.account.ifsc;
+  document.getElementById('branch').textContent = data.account.branch;
+  document.getElementById('phBank').textContent = data.bankName;
+  document.getElementById('phDate').textContent = 'Generated: ' + new Date().toLocaleString('en-IN',{hour12:true});
+  document.getElementById('pfText').textContent = `${data.bankName} • ${data.account.numberMasked} • ${data.statementPeriod}`;
+
+  const search = document.getElementById('search')?.value.toLowerCase() || '';
+
+  // keep ascending for balances
+  const list = data.transactions.slice().sort((a,b)=> new Date(a.ts)-new Date(b.ts));
+
+  // filter
+  const filtered = list.filter(t=>`${t.title} ${t.who} ${t.ref} ${t.channel} ${t.amount}`.toLowerCase().includes(search));
+
+  // running balances map (from ascending list)
+  const withBalances = computeBalances(list);
+  const balById = new Map(withBalances.map(t=>[t.id, t.balance]));
+
+  // NEW: show newest first on screen, without changing balance math
+  const display = filtered.slice().sort((a,b)=> new Date(b.ts)-new Date(a.ts));
+
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+
+  display.forEach(tx=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${new Date(tx.ts).toLocaleString('en-IN',{hour12:true})}</td>
+      <td>
+        <div class="row-head">
+          <span>${arrow(tx.type)}<strong>${tx.title}</strong></span>
+          <span class="${badgeClass(tx.channel)}">${tx.channel}</span>
+        </div>
+        <div class="small">${tx.type==='credit'?'From':'To'}: ${tx.who||'-'}</div>
+      </td>
+      <td class="small">${tx.ref||'-'}</td>
+      <td class="money debit">${tx.type==='debit'? formatINR(tx.amount): ''}</td>
+      <td class="money credit">${tx.type==='credit'? formatINR(tx.amount): ''}</td>
+      <td class="money">${formatINR(balById.get(tx.id)||0)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function exportCSV(){
+  const data = loadData();
+  const rows = [['Date/Time','Type','Channel','Title','Party','Ref','Amount','Debit/Credit','Balance']];
+  const withBal = computeBalances(data.transactions);
+  withBal.forEach(tx=>{
+    const when = new Date(tx.ts).toISOString();
+    const dc = tx.type==='credit'?'C':'D';
+    rows.push([when, tx.type, tx.channel, tx.title, tx.who||'', tx.ref||'', tx.amount, dc, tx.balance]);
+  });
+  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'statement.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* build the print-only sheet */
+function buildPrintStmt(){
+  const data = loadData();
+  document.getElementById('p_name').textContent   = data.account.name || '—';
+  document.getElementById('p_date').textContent   = new Date().toLocaleDateString('en-IN');
+  document.getElementById('p_acno').textContent   = data.account.numberMasked || '—';
+  document.getElementById('p_period').textContent = `${data.statementPeriod} to ${data.statementPeriod}`;
+
+  const tbody = document.querySelector('#p_table tbody');
+  tbody.innerHTML = '';
+  let bal = Number(data.account.openingBalance||0);
+  const rows = data.transactions.slice().sort((a,b)=> new Date(a.ts) - new Date(b.ts));
+  rows.forEach(tx=>{
+    if(tx.type==='credit') bal += tx.amount; else bal -= tx.amount;
+    const d  = new Date(tx.ts); const ymd = d.toISOString().slice(0,10);
+    const desc = `${tx.title} ${tx.channel? '('+tx.channel+')':''}\n${tx.type==='credit'?'From':'To'} ${tx.who||''}`.trim();
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${ymd}</td>
+      <td>${ymd}</td>
+      <td class="desc">${desc}</td>
+      <td>${tx.ref||''}</td>
+      <td>${tx.type==='debit'  ? money2(tx.amount) : ''}</td>
+      <td>${tx.type==='credit' ? money2(tx.amount) : ''}</td>
+      <td>${money2(bal)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function downloadPDF(){
+  const data = loadData();
+  const oldTitle = document.title;
+  const fileSafe = (s)=> String(s||'').replace(/\s+/g,'_').replace(/[^A-Za-z0-9_\-]/g,'');
+  document.title = `Statement_${fileSafe(data.account.numberMasked)}_${fileSafe(data.statementPeriod)}`;
+  window.print();
+  setTimeout(()=>{ document.title = oldTitle; }, 500);
+}
+
+document.getElementById('search').addEventListener('input', render);
+document.getElementById('btnThisMonth').addEventListener('click', ()=>{
+  const data = loadData();
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  data.statementPeriod = start.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  saveData(data); render();
+});
+document.getElementById('btnExportCSV').addEventListener('click', exportCSV);
+document.getElementById('btnDownload').addEventListener('click', downloadPDF);
+
+/* populate sheet right before printing */
+window.addEventListener('beforeprint', buildPrintStmt);
+
+window.addEventListener('storage', (e)=>{ if(e.key===STORAGE_KEY) render(); });
+if(!localStorage.getItem(STORAGE_KEY)) localStorage.setItem(STORAGE_KEY, JSON.stringify(demo));
+render();
+</script>
+</body>
+</html>
